@@ -352,14 +352,14 @@ void polybench_timer_stop()
 #endif
 }
 
-
+// Add captions for execution time and convert into microseconds
 void polybench_timer_print()
 {
 #ifdef POLYBENCH_GFLOPS
       if  (__polybench_program_total_flops == 0)
 	{
 	  printf ("[PolyBench][WARNING] Program flops not defined, use polybench_set_program_flops(value)\n");
-	  printf ("%0.6lf\n", polybench_t_end - polybench_t_start);
+	  printf ("Execution time: %0.6lf ms\n", (polybench_t_end - polybench_t_start) * 1000);
 	}
       else
 	printf ("%0.2lf\n",
@@ -367,7 +367,7 @@ void polybench_timer_print()
 		 (double)(polybench_t_end - polybench_t_start)) / 1000000000);
 #else
 # ifndef POLYBENCH_CYCLE_ACCURATE_TIMER
-      printf ("%0.6f\n", polybench_t_end - polybench_t_start);
+      printf ("Execution time: %0.6f ms\n", (polybench_t_end - polybench_t_start) * 1000);
 # else
       printf ("%Ld\n", polybench_c_end - polybench_c_start);
 # endif
