@@ -10,6 +10,16 @@
 /* Default data type is double, default size is 1000. */
 #include "correlation.h"
 
+/* Define macro to get execution time for a single function. */
+#ifdef POLYBENCH_FUNCTION
+  #define START_TIMER polybench_start_instruments;
+  #define STOP_TIMER  polybench_stop_instruments; \
+                      polybench_print_instruments;
+#else
+  #define START_TIMER
+  #define STOP_TIMER
+#endif
+
 
 /* Array initialization. */
 static void init_array (int m, int n, DATA_TYPE *float_n, DATA_TYPE POLYBENCH_2D(data,M,N,m,n)){
@@ -49,7 +59,8 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
 
 #define sqrt_of_array_cell(x,j) sqrt(x[j])
 
-  /* Determine mean of column vectors of input data matrix */
+  /* 1. Determine mean of column vectors of input data matrix */
+  START_TIMER
   for (j = 0; j < _PB_M; j++){
     mean[j] = 0.0;
 	  for (i = 0; i < _PB_N; i++){
@@ -57,8 +68,10 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
     }
 	  mean[j] /= float_n;
   }
+  STOP_TIMER
     
-  /* Determine standard deviations of column vectors of data matrix. */
+  /* 2. Determine standard deviations of column vectors of data matrix. */
+  START_TIMER
   for (j = 0; j < _PB_M; j++){
     stddev[j] = 0.0;
 	  for (i = 0; i < _PB_N; i++){
@@ -71,16 +84,20 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
 	   divide. */
 	  stddev[j] = stddev[j] <= eps ? 1.0 : stddev[j];
   }
+  STOP_TIMER
     
-  /* Center and reduce the column vectors. */
+  /* 3. Center and reduce the column vectors. */
+  START_TIMER
   for (i = 0; i < _PB_N; i++){
     for (j = 0; j < _PB_M; j++){
       data[i][j] -= mean[j];
       data[i][j] /= sqrt(float_n) * stddev[j];
     }
   }
+  STOP_TIMER
     
-  /* Calculate the m * m correlation matrix. */
+  /* 4. Calculate the m * m correlation matrix. */
+  START_TIMER
   for (j1 = 0; j1 < _PB_M-1; j1++){
     symmat[j1][j1] = 1.0;
 	  for (j2 = j1+1; j2 < _PB_M; j2++){
@@ -91,6 +108,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
 	    symmat[j2][j1] = symmat[j1][j2];
     }
   }
+  STOP_TIMER
   symmat[_PB_M-1][_PB_M-1] = 1.0;
 }
 

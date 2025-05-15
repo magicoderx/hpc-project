@@ -43,5 +43,14 @@
 #  define DATA_PRINTF_MODIFIER "%0.2lf "
 # endif
 
+/* Define macro to get execution time for a single function. */
+#ifdef POLYBENCH_FUNCTION
+  #define START_TIMER polybench_start_instruments;
+  #define STOP_TIMER  polybench_stop_instruments; \
+                      polybench_print_instruments;
+#else
+  #define START_TIMER
+  #define STOP_TIMER
+#endif
 
 #endif /* !CORRELATION_H */
