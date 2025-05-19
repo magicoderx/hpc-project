@@ -52,92 +52,57 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
 
   /* 1. Determine mean of column vectors of input data matrix */
   START_TIMER
-  #pragma omp parallel
-  {
-    #pragma omp single
-    {
-      for (j = 0; j < _PB_M; j++){
-        #pragma omp task firstprivate(j) // Every thread execute on different column (j), every thread has its private value of j
-        {
-          mean[j] = 0.0;
-	        for (i = 0; i < _PB_N; i++){
-	          mean[j] += data[i][j];
-          }
-	        mean[j] /= float_n;
-        }
-      }
+  #pragma omp parallel for private(i) // let i private because of internal index
+  for (j = 0; j < _PB_M; j++){
+    mean[j] = 0.0;
+	  for (i = 0; i < _PB_N; i++){
+	      mean[j] += data[i][j];
     }
+	  mean[j] /= float_n;
   }
-  #pragma omp taskwait
   STOP_TIMER
     
   /* 2. Determine standard deviations of column vectors of data matrix. */
   START_TIMER
-  #pragma omp parallel
-  {
-    #pragma omp single
-    {
-      for (j = 0; j < _PB_M; j++){
-        #pragma omp task firstprivate(j)
-        {
-          stddev[j] = 0.0;
-	        for (i = 0; i < _PB_N; i++){
-	          stddev[j] += (data[i][j] - mean[j]) * (data[i][j] - mean[j]);
-          }
-	        stddev[j] /= float_n;
-	        stddev[j] = sqrt_of_array_cell(stddev, j);
-	        stddev[j] = stddev[j] <= eps ? 1.0 : stddev[j];
-        }
-      }
+  #pragma omp parallel for private(i)
+  for (j = 0; j < _PB_M; j++){
+    stddev[j] = 0.0;
+	  for (i = 0; i < _PB_N; i++){
+	    stddev[j] += (data[i][j] - mean[j]) * (data[i][j] - mean[j]);
     }
+	  stddev[j] /= float_n;
+	  stddev[j] = sqrt_of_array_cell(stddev, j);
+	/* The following in an inelegant but usual way to handle
+	   near-zero std. dev. values, which below would cause a zero-
+	   divide. */
+	  stddev[j] = stddev[j] <= eps ? 1.0 : stddev[j];
   }
-  #pragma omp taskwait
   STOP_TIMER
     
   /* 3. Center and reduce the column vectors. */
   START_TIMER
-  #pragma omp parallel
-  {
-    #pragma omp single
-    {
-      for (i = 0; i < _PB_N; i++)
-      {
-        #pragma omp firstprivate(i)
-        {
-          for (j = 0; j < _PB_M; j++){
-            data[i][j] -= mean[j];
-            data[i][j] /= sqrt(float_n) * stddev[j];
-          }
-        }
-      }
+  #pragma omp parallel for private(j)
+  for (i = 0; i < _PB_N; i++){
+    for (j = 0; j < _PB_M; j++){
+      data[i][j] -= mean[j];
+      data[i][j] /= sqrt(float_n) * stddev[j];
     }
   }
-  #pragma omp taskwait
   STOP_TIMER
     
   /* 4. Calculate the m * m correlation matrix. */
   START_TIMER
-  #pragma omp parallel
-  {
-    #pragma omp single
-    {
-      for (j1 = 0; j1 < _PB_M-1; j1++){
-        symmat[j1][j1] = 1.0; // Set diagonal values to 1.0
-	      for (j2 = j1+1; j2 < _PB_M; j2++){
-          #pragma omp task firstprivate(j1,j2)
-          {
-            DATA_TYPE sum = 0.0; // Initialize new variable to avoid conflicts
-	          for (i = 0; i < _PB_N; i++){
-	            sum += (data[i][j1] * data[i][j2]);
-            }
-	          symmat[j1][j2] = sum;
-	          symmat[j2][j1] = sum;
-          }
-        }
+  #pragma omp parallel for private(j2, i)
+  for (j1 = 0; j1 < _PB_M-1; j1++){
+    symmat[j1][j1] = 1.0;
+	  for (j2 = j1+1; j2 < _PB_M; j2++){
+      symmat[j1][j2] = 0.0;
+	    for (i = 0; i < _PB_N; i++){
+	      symmat[j1][j2] += (data[i][j1] * data[i][j2]);
       }
+	    symmat[j2][j1] = symmat[j1][j2];
     }
   }
-  #pragma omp taskwait
   symmat[_PB_M-1][_PB_M-1] = 1.0;
   STOP_TIMER
 }
