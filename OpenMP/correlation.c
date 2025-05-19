@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+// Add OpenMP library
+#include <omp.h>
 
 /* Include polybench common header. */
 #include <polybench.h>
@@ -50,10 +52,11 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
 
   /* 1. Determine mean of column vectors of input data matrix */
   START_TIMER
+  #pragma omp parallel for private(i) // let i private because of internal index
   for (j = 0; j < _PB_M; j++){
     mean[j] = 0.0;
 	  for (i = 0; i < _PB_N; i++){
-	    mean[j] += data[i][j];
+	      mean[j] += data[i][j];
     }
 	  mean[j] /= float_n;
   }
@@ -61,6 +64,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
     
   /* 2. Determine standard deviations of column vectors of data matrix. */
   START_TIMER
+  #pragma omp parallel for private(i)
   for (j = 0; j < _PB_M; j++){
     stddev[j] = 0.0;
 	  for (i = 0; i < _PB_N; i++){
@@ -77,6 +81,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
     
   /* 3. Center and reduce the column vectors. */
   START_TIMER
+  #pragma omp parallel for private(j)
   for (i = 0; i < _PB_N; i++){
     for (j = 0; j < _PB_M; j++){
       data[i][j] -= mean[j];
@@ -87,7 +92,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
     
   /* 4. Calculate the m * m correlation matrix. */
   START_TIMER
-  #ifndef LOOP_INTERCHANGE
+  #pragma omp parallel for private(j2, i)
   for (j1 = 0; j1 < _PB_M-1; j1++){
     symmat[j1][j1] = 1.0;
 	  for (j2 = j1+1; j2 < _PB_M; j2++){
@@ -98,28 +103,6 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
 	    symmat[j2][j1] = symmat[j1][j2];
     }
   }
-  #else
-  for (j1 = 0; j1 < _PB_M-1; j1++){
-    for (j2 = j1+1; j2 < _PB_M; j2++){
-      symmat[j1][j1] = 0.0;
-    }
-  }
-
-  for (i = 0; i < _PB_N; i++){
-    for (j1 = 0; j1 < _PB_M-1; j1++){
-      symmat[j1][j1] = 1.0;
-      for (j2 = j1+1; j2 < _PB_M; j2++){
-        symmat[j1][j2] += (data[i][j1] * data[i][j2]);
-      }
-    }
-  }
-
-  for (j1 = 0; j1 < _PB_M-1; j1++){
-    for (j2 = j1+1; j2 < _PB_M; j2++){
-      symmat[j2][j1] = symmat[j1][j2];
-    }
-  }
-  #endif
   symmat[_PB_M-1][_PB_M-1] = 1.0;
   STOP_TIMER
 }

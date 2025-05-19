@@ -1,2 +1,3 @@
 OpenMP/correlation_acc
 OpenMP/Makefile.dep
+OpenMP/*.test
