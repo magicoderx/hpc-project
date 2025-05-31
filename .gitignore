@@ -1,3 +1,5 @@
 OpenMP/correlation_acc
+CUDA/correlation_cuda
 OpenMP/Makefile.dep
 OpenMP/*.test
+CUDA/*.test
