@@ -168,6 +168,7 @@ int main(){
 
     /* 3. Center and reduce the column vectors. */
     // Create a bidimensional block (16x16) to let the thread operate on a single cell of the matrix
+    // https://docs.nvidia.com/cuda/cuda-c-programming-guide/#dim3
     int bsize2d = 16;
     dim3 blocksize2d(bsize2d, bsize2d);
     dim3 num_blocks2d((m + bsize2d - 1) / 16, (n + bsize2d - 1) / 16);
