@@ -83,9 +83,9 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
 	        mean[j] /= float_n;
         }
       }
+      #pragma omp taskwait
     }
   }
-  #pragma omp taskwait
   #endif
   STOP_TIMER
     
@@ -127,9 +127,9 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
 	        stddev[j] = stddev[j] <= eps ? 1.0 : stddev[j];
         }
       }
+      #pragma omp taskwait
     }
   }
-  #pragma omp taskwait
   #endif
   STOP_TIMER
     
@@ -157,15 +157,15 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
       {
         #pragma omp firstprivate(i)
         {
-          for (j = 0; j < _PB_M; j++){
+          for (int j = 0; j < _PB_M; j++){
             data[i][j] -= mean[j];
             data[i][j] /= sqrt(float_n) * stddev[j];
           }
         }
       }
+      #pragma omp taskwait
     }
   }
-  #pragma omp taskwait
   #endif
   STOP_TIMER
     
@@ -220,9 +220,9 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
           }
         }
       }
+      #pragma omp taskwait
     }
   }
-  #pragma omp taskwait
   #endif
   symmat[_PB_M-1][_PB_M-1] = 1.0;
   #ifdef PARALLEL_TARGET

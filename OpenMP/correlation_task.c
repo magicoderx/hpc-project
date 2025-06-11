@@ -66,9 +66,9 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
 	        mean[j] /= float_n;
         }
       }
+      #pragma omp taskwait
     }
   }
-  #pragma omp taskwait
   STOP_TIMER
     
   /* 2. Determine standard deviations of column vectors of data matrix. */
@@ -89,9 +89,9 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
 	        stddev[j] = stddev[j] <= eps ? 1.0 : stddev[j];
         }
       }
+      #pragma omp taskwait
     }
   }
-  #pragma omp taskwait
   STOP_TIMER
     
   /* 3. Center and reduce the column vectors. */
@@ -102,7 +102,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
     {
       for (i = 0; i < _PB_N; i++)
       {
-        #pragma omp firstprivate(i)
+        #pragma omp task firstprivate(i)
         {
           for (j = 0; j < _PB_M; j++){
             data[i][j] -= mean[j];
@@ -110,9 +110,9 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
           }
         }
       }
+      #pragma omp taskwait
     }
   }
-  #pragma omp taskwait
   STOP_TIMER
     
   /* 4. Calculate the m * m correlation matrix. */
@@ -135,9 +135,9 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
           }
         }
       }
+      #pragma omp taskwait
     }
   }
-  #pragma omp taskwait
   symmat[_PB_M-1][_PB_M-1] = 1.0;
   STOP_TIMER
 }
