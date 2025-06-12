@@ -40,6 +40,9 @@ make clean && make run EXT_CFLAGS="-DPOLYBENCH_TIME -DPARALLEL_TASK -DEXTRALARGE
 
 For target implementation
 ```bash
+cd ~/spack
+. share/spack/setup-env.sh
+spack load llvm
 make clean && make run PARALLEL_TARGET=1 EXT_CFLAGS="-DPOLYBENCH_TIME -DPARALLEL_TARGET -DEXTRALARGE_DATASET"
 ```
 
