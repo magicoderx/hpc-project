@@ -127,7 +127,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
           #pragma omp task firstprivate(j1,j2)
           {
             DATA_TYPE sum = 0.0; // Initialize new variable to avoid conflicts
-	          for (i = 0; i < _PB_N; i++){
+	          for (int i = 0; i < _PB_N; i++){
 	            sum += (data[i][j1] * data[i][j2]);
             }
 	          symmat[j1][j2] = sum;
