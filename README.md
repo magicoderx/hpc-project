@@ -32,10 +32,15 @@ And also the desidered method of parallelization
 - `PARALLEL_TASK`, parallelize using tasks
 - `PARALLEL_TARGET`, parallelize using GPU offloading
 
-**This is an example for copy/paste of the code compiled with offloading method, using 4000x4000 matrix and getting the execution time in output**
+**This is an example for copy/paste of the code compiled with tasking method, using 4000x4000 matrix and getting the execution time in output**
 
 ```bash
-make clean && make run EXT_CFLAGS="-DPOLYBENCH_TIME -DPARALLEL_TARGET -DEXTRALARGE_DATASET"
+make clean && make run EXT_CFLAGS="-DPOLYBENCH_TIME -DPARALLEL_TASK -DEXTRALARGE_DATASET"
+```
+
+For target implementation
+```bash
+make clean && make run PARALLEL_TARGET=1 EXT_CFLAGS="-DPOLYBENCH_TIME -DPARALLEL_TARGET -DEXTRALARGE_DATASET"
 ```
 
 For CUDA this is an example with benchmark on 4000x4000 matrix

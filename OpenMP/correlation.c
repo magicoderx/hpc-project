@@ -77,7 +77,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
         #pragma omp task firstprivate(j)
         {
           mean[j] = 0.0;
-	        for (i = 0; i < _PB_N; i++){
+	        for (int i = 0; i < _PB_N; i++){
 	          mean[j] += data[i][j];
           }
 	        mean[j] /= float_n;
@@ -119,7 +119,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
         #pragma omp task firstprivate(j)
         {
           stddev[j] = 0.0;
-	        for (i = 0; i < _PB_N; i++){
+	        for (int i = 0; i < _PB_N; i++){
 	          stddev[j] += (data[i][j] - mean[j]) * (data[i][j] - mean[j]);
           }
 	        stddev[j] /= float_n;
@@ -190,7 +190,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
         #ifndef PARALLEL_TARGET
 	      symmat[j1][j2] += (data[i][j1] * data[i][j2]);
         #else
-        sum += data[j1][i] * data[j2][i];
+        sum += data[i][j1] * data[i][j2];
         #endif
       }
       #ifndef PARALLEL_TARGET
@@ -212,7 +212,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
           #pragma omp task firstprivate(j1,j2)
           {
             DATA_TYPE sum = 0.0;
-	          for (i = 0; i < _PB_N; i++){
+	          for (int i = 0; i < _PB_N; i++){
 	            sum += (data[i][j1] * data[i][j2]);
             }
 	          symmat[j1][j2] = sum;
@@ -224,10 +224,10 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
     }
   }
   #endif
-  symmat[_PB_M-1][_PB_M-1] = 1.0;
   #ifdef PARALLEL_TARGET
   }
   #endif
+  symmat[_PB_M-1][_PB_M-1] = 1.0;
   STOP_TIMER
 }
 

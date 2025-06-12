@@ -101,14 +101,14 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
 	  for (j2 = j1+1; j2 < _PB_M; j2++){
       DATA_TYPE sum = 0.0; // Initialize new variable to avoid conflicts
 	    for (i = 0; i < _PB_N; i++){
-        sum += data[j1][i] * data[j2][i];
+        sum += data[i][j1] * data[i][j2];
       }
       symmat[j1][j2] = sum;
       symmat[j2][j1] = sum;
     }
   }
-  symmat[_PB_M-1][_PB_M-1] = 1.0;
 }
+  symmat[_PB_M-1][_PB_M-1] = 1.0;
   STOP_TIMER
 }
 

@@ -60,7 +60,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
         #pragma omp task firstprivate(j) // Every thread execute on different column (j), every thread has its private value of j
         {
           mean[j] = 0.0;
-	        for (i = 0; i < _PB_N; i++){
+	        for (int i = 0; i < _PB_N; i++){
 	          mean[j] += data[i][j];
           }
 	        mean[j] /= float_n;
@@ -81,7 +81,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
         #pragma omp task firstprivate(j)
         {
           stddev[j] = 0.0;
-	        for (i = 0; i < _PB_N; i++){
+	        for (int i = 0; i < _PB_N; i++){
 	          stddev[j] += (data[i][j] - mean[j]) * (data[i][j] - mean[j]);
           }
 	        stddev[j] /= float_n;
@@ -104,7 +104,7 @@ static void kernel_correlation(int m, int n, DATA_TYPE float_n,	DATA_TYPE POLYBE
       {
         #pragma omp task firstprivate(i)
         {
-          for (j = 0; j < _PB_M; j++){
+          for (int j = 0; j < _PB_M; j++){
             data[i][j] -= mean[j];
             data[i][j] /= sqrt(float_n) * stddev[j];
           }
